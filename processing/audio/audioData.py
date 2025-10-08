@@ -3,7 +3,7 @@ import json
 from os import listdir
 import numpy as np
 
-from audio.singleAudioSceneData import AudioScene
+from .singleAudioSceneData import AudioScene
 
 def getAudioData(dataDir,name):
     audioDir = dataDir+'audios/'
@@ -25,4 +25,3 @@ def getAudioData(dataDir,name):
     audio_df.to_json(dataDir+'audioSceneData.json', orient = 'records')
 
 
-# getAudioData("PrincessMononoke")

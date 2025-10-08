@@ -5,8 +5,8 @@ import colorsys
 from os import listdir
 from PIL import Image as PImage
 
-from utils.image_utils import *
-from utils.data_utils import GaussianClustering
+from processing.utils.image_utils import *
+from processing.utils.data_utils import GaussianClustering
 
 def get_main_colors_clusters(imgPath): 
     # get image and convert pixels into a dataframe

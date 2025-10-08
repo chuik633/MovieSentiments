@@ -1,6 +1,0 @@
-sceneLinks = [
-    {
-        'name':'',
-        'sceneURL':''
-    }
-]
