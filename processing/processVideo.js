@@ -108,21 +108,12 @@ async function processVideo(mainDir, numSamples) {
       );
 
       //extract the image
-      // await executeCommand(
-      //   `ffmpeg -i "${videoSegmentPath}" -vf "fps=1/10" "${path.join(
-      //     images,
-      //     `${sampleNum}-%03d.png`
-      //   )}"`
-      // );
       await executeCommand(
         `ffmpeg -i "${videoSegmentPath}" \
         -vf "fps=1/10,scale=640:-1" \
         -q:v 12 \
         "${path.join(images, `${sampleNum}-%03d.jpg`)}"`
       );
-      // await executeCommand(
-      //   `ffmpeg -i "${videoSegmentPath}" -ss 00:00:00 -vframes 1 ${imgSegmentPath}`
-      // );
     }
   } catch (error) {
     console.error("!ERROR PROCESSING VIDEO:", error);

@@ -18,10 +18,11 @@ def getAudioData(dataDir,name):
             print("ERROR:",audioFilename)
         sceneAudio = AudioScene(audioDir+audioFilename)
         entry = sceneAudio.getData()
-        entry['sceneNum']=i
-        all_audio_Data.append(entry)
 
-    audio_df = pd.DataFrame(all_audio_Data)
-    audio_df.to_json(dataDir+'audioSceneData.json', orient = 'records')
+        all_audio_Data.append(entry)
+    with open(dataDir + 'audioSceneData.json', 'w') as f:
+            json.dump(all_audio_Data, f, indent=2)
+    # audio_df = pd.DataFrame(all_audio_Data)
+    # audio_df.to_json(dataDir+'audioSceneData.json', orient = 'records')
 
 

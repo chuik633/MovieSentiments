@@ -7,6 +7,7 @@ from PIL import Image as PImage
 
 from processing.utils.image_utils import *
 from processing.utils.data_utils import GaussianClustering
+from sklearn.cluster import KMeans
 
 def get_main_colors_clusters(imgPath): 
     # get image and convert pixels into a dataframe
@@ -78,7 +79,7 @@ def getImageData(moviePath, name):
         sec = int(img_file.split('-')[1].split('.')[0])
         colors = get_main_colors(imgDir + img_file, 100)
         file_colors.append({
-            'filename': img_file,
+            # 'filename': img_file,
             'colors': colors,
             'sceneNum':i,
             'second':sec
@@ -86,4 +87,11 @@ def getImageData(moviePath, name):
 
     color_df = pd.DataFrame(file_colors)
     color_df.to_json(moviePath+"imageSceneData.json", orient = 'records')
+
+    # get average image data
+    all_colors = np.vstack([np.array(entry['colors']) for entry in file_colors])
+    model = KMeans(n_clusters = 5)
+    model.fit(all_colors)
+    main_colors = model.cluster_centers_.astype(int).tolist()
+    return main_colors
 

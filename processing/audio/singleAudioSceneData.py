@@ -19,8 +19,10 @@ for start in ['chroma', 'mfcc']:
         short_features_selected.append(start+"_"+str(i))
 
 class AudioScene():
-    def __init__(self, filepath):
+    def __init__(self, filepath,sample_duration=1, sample_interval=10):
         self.filepath = filepath
+        self.sample_duration = sample_duration
+        self.sample_interval = sample_interval
 
         # Fs - sample rate, x - audio signal as nparray
         [self.Fs, self.x] = audioBasicIO.read_audio_file(filepath)
@@ -29,6 +31,8 @@ class AudioScene():
         if self.x.shape[1] == 2:
             # print("converting stereo to mono")
             self.x = np.mean(self.x, axis = 1)
+        
+        
 
         # set up the window size and step size
         self.short_window_size = .05*self.Fs
@@ -49,36 +53,56 @@ class AudioScene():
             self.short_window_size,
             self.short_step_size)
 
+    def getSamples(self):
+        print("Fs:", self.Fs)
+        print("sample_duration:", self.sample_duration)
+        print("sample_interval:", self.sample_interval)
+        numSegmentSamples = int(self.sample_duration * self.Fs) #duration of sample * sample rate
+        numIntervalSamples = int(self.sample_interval *self.Fs)
+        numSamples = len(self.x)
+
+        segments = []
+        for start in range(0, numSamples, numIntervalSamples):
+            end = start + numSegmentSamples
+            if end <= numSamples:
+                segments.append(self.x[start:end])
+        if segments:
+            self.x = np.concatenate(segments)
+
+        return segments
 
     def getData(self):
-        avgamp, amp = self.getAmplitude()
-        # avgenergy, energy = self.getEnergy()
-        beats, beat_times = self.getTempo()
+        segments = self.getSamples()
+        data = []
 
-        self.feature_dict = {name: value for name, value in zip(self.short_feature_names, self.short_features) if name in short_features_selected}
-        self.feature_dict.update(
-            {
-            'sample_rate':self.Fs,
-            'notes_at_timestamps':self.getNotes(),
-            'amplitude_avg':avgamp,
-            # 'amplitude':amp,
-            'beats':beats,
-            'beat_times':beat_times,
-            # 'energy_avg':avgenergy,
-            # 'energy':energy[0],
-            'instruments':self.getInstruments(),
-            'emotion': self.getEmotionLabel()
-            }
-        )
-        return self.feature_dict
+        for i, segment in enumerate(segments):
+            entry = {}
+            short_features, feature_names = ShortTermFeatures.feature_extraction(
+                                        segment, self.Fs, self.short_window_size, self.short_step_size
+                                    )
+            for name, values in zip(feature_names, short_features):
+                if name in short_features_selected:
+                    entry[f"{name}_mean"] = float(np.mean(values))
+                    entry[f"{name}_min"] = float(np.min(values))
+                    entry[f"{name}_max"] = float(np.max(values))
+            avgamp, _ = self.getAmplitude(segment)
+            entry.update({
+                'index':i,
+                'seconds':i*self.sample_interval,
+                'amplitude_avg':avgamp
+            })
+            data.append(entry)
+        return data
+
+
        
 
     def getBeat(self):
         bpm, ratio = MidTermFeatures.beat_extraction(self.short_features, 1)
         return bpm
     
-    def getNotes(self, threshold = .05):
-        chromagram, time_axis, _ = ShortTermFeatures.chromagram(self.x, self.Fs, self.short_window_size, self.Fs)
+    def getNotes(self, segment,threshold = .05):
+        chromagram, time_axis, _ = ShortTermFeatures.chromagram(segment, self.Fs, self.short_window_size, self.Fs)
         chromagram = chromagram.T
         notes_at_timestamps = {}
         for i, time in enumerate(time_axis):
@@ -90,38 +114,16 @@ class AudioScene():
             notes_at_timestamps[time] = detected_notes
         return notes_at_timestamps
     
-    def getAmplitude(self):
-        peak_amplitude = np.max(np.abs(self.x))
-        return float(peak_amplitude),np.abs(self.x)
+    def getAmplitude(self, segment):
+        peak_amplitude = np.max(np.abs(segment))
+        return float(peak_amplitude),np.abs(segment)
     
-    def getEnergy(self):
-        energy = librosa.feature.rms(y=self.x, hop_length=self.Fs)
+    def getEnergy(self,segment):
+        energy = librosa.feature.rms(y=segment, hop_length=self.Fs)
         avg = sum(energy[0])/len(energy[0])
         return float(avg), energy
     
-    def getTempo(self):
-        tempo, beats = librosa.beat.beat_track(y=self.x, sr=self.Fs)
-        beat_times = librosa.frames_to_time(beats, sr=self.Fs)
-        return beats,beat_times
-    
-    def getInstruments(self):
-        #TODO: DO THIS for ML class
-        return { #each value is the loudness of each
-            'strings':.5,
-            'woodwinds':.5,
-            'piano':.1
-        }
-    
-
-    
-    def getEmotionLabel(self):
-         #TODO: DO THIS for ML class
-        return {
-            'happy':.5,
-            'sad':.25,
-            'fear':.25,
-            "funny":0
-        }
+  
     
 # # TESTINGGGG
 # sceneAudio = AudioScene('./tmp/pingu/audios/4.wav')

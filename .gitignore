@@ -1,7 +1,5 @@
 .myenv
 .data
-.processing/data/
-*.json
 *.mp4
 *.wav
 *.jpg
