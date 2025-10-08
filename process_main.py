@@ -133,11 +133,12 @@ def getData(name, numSamples = 20, youtubeLink = False, captions = False):
     if(videoInfo == None):
         print("Error getting video info:", e.stderr)
         return
-    print(videoInfo)
     
 
     #3. gets the color information for each scene imageSceneData.json
-    getImageData(dataDir,name)
+    main_colors = getImageData(dataDir,name)
+    print("MAIN COLORS", main_colors)
+    
 
     #4. gets the audio data for each scene and saves it in audioSceneData.json
     getAudioData(dataDir,name)
@@ -145,6 +146,8 @@ def getData(name, numSamples = 20, youtubeLink = False, captions = False):
     #5. saves captions if there are them
     if os.path.exists(dataDir+'video.en.ass'):
         getCaptionData(name, round(videoInfo['sampleLength']))
+
+    # save to the data file
 
 
 # import sceneLinks
@@ -156,7 +159,7 @@ def getData(name, numSamples = 20, youtubeLink = False, captions = False):
 import pandas as pd
 df = pd.read_csv('./data/scenelinks.csv')
 print(df.head())
-df["name"] = df["movie"].str.replace(" ", "", regex=False)
+df["name"] = df["movie"].str.replace(" ", "-", regex=False).str.replace(":", "-", regex=False)
 print(df.head())
 for idx, row in df.iterrows():
     getData(row["name"], 1,row["link"],captions = False)
