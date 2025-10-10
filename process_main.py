@@ -169,4 +169,12 @@ print(df.head())
 df["name"] = df["movie"].str.replace(" ", "-", regex=False).str.replace(":", "-", regex=False)
 print(df.head())
 for idx, row in df.iterrows():
-    getData(row["movie"], row["name"],1, row["link"],captions = False)
+    if not os.path.exists(f'./processing/data/tmp/{row["name"]}/'):
+        print("Processing: "+row["movie"])
+        try:
+            getData(row["movie"], row["name"],1, row["link"],captions = False)
+        except Exception as e:
+            print(print("ERROR", row["movie"]))
+            print(print(e))
+    else:
+        print("Skipping", row["movie"])
