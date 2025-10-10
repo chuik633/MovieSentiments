@@ -86,8 +86,7 @@ def process_captions(name, videoInfo):
     print("no captions found")
 
 
-# THIS IS OLD
-def getData(name, numSamples = 20, youtubeLink = False, captions = False):
+def getData(movie, name, numSamples = 20, youtubeLink = False, captions = False):
     dataDir = './processing/data/tmp/'+f"{name}/"
     print(dataDir)
     clear_directories(dataDir)
@@ -136,18 +135,26 @@ def getData(name, numSamples = 20, youtubeLink = False, captions = False):
     
 
     #3. gets the color information for each scene imageSceneData.json
-    main_colors = getImageData(dataDir,name)
-    print("MAIN COLORS", main_colors)
-    
-
-    #4. gets the audio data for each scene and saves it in audioSceneData.json
-    getAudioData(dataDir,name)
-
-    #5. saves captions if there are them
-    if os.path.exists(dataDir+'video.en.ass'):
-        getCaptionData(name, round(videoInfo['sampleLength']))
+    all_colors, main_colors = getImageData(dataDir,name)
+    image_df = pd.DataFrame(main_colors)
+    image_df["movie"] = movie
 
     # save to the data file
+    image_csv =os.path.join('./data/', "image_data.csv")
+    image_df.to_csv(image_csv, mode='a', index=False,header=not os.path.exists(image_csv) )
+
+
+    #4. gets the audio data for each scene and saves it in audioSceneData.json
+    audio_data = getAudioData(dataDir,name)
+    audio_df = pd.DataFrame(audio_data)
+    audio_df['movie']= movie
+    
+
+    # save to the data file
+    os.makedirs('./data/', exist_ok=True)
+    audio_csv = os.path.join('./data/', "audio_data.csv")
+    audio_df.to_csv(audio_csv,mode='a',index=False,header=not os.path.exists(audio_csv))
+
 
 
 # import sceneLinks
@@ -162,4 +169,4 @@ print(df.head())
 df["name"] = df["movie"].str.replace(" ", "-", regex=False).str.replace(":", "-", regex=False)
 print(df.head())
 for idx, row in df.iterrows():
-    getData(row["name"], 1,row["link"],captions = False)
+    getData(row["movie"], row["name"],1, row["link"],captions = False)

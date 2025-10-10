@@ -93,5 +93,5 @@ def getImageData(moviePath, name):
     model = KMeans(n_clusters = 5)
     model.fit(all_colors)
     main_colors = model.cluster_centers_.astype(int).tolist()
-    return main_colors
+    return all_colors,main_colors
 
