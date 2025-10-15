@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
+import pandas as pd
 import subprocess
 import json
 import shutil
@@ -157,24 +157,20 @@ def getData(movie, name, numSamples = 20, youtubeLink = False, captions = False)
 
 
 
-# import sceneLinks
-# for movie in sceneLinks:
-#     getData(movie['name'], 1, youtubeLink=movie["url"], captions = False)
-# print("hellow")
-# getData('lalaland', 1,'https://www.youtube.com/watch?v=K9VWhHJaSjA',captions = False)
 
-import pandas as pd
-df = pd.read_csv('./data/scenelinks.csv')
-print(df.head())
-df["name"] = df["movie"].str.replace(" ", "-", regex=False).str.replace(":", "-", regex=False)
-print(df.head())
-for idx, row in df.iterrows():
-    if not os.path.exists(f'./processing/data/tmp/{row["name"]}/'):
-        print("Processing: "+row["movie"])
-        try:
-            getData(row["movie"], row["name"],1, row["link"],captions = False)
-        except Exception as e:
-            print(print("ERROR", row["movie"]))
-            print(print(e))
-    else:
-        print("Skipping", row["movie"])
+# import pandas as pd
+# df = pd.read_csv('./data/scenelinks.csv')
+# print(df.head())
+# df["name"] = df["movie"].str.replace(" ", "-", regex=False).str.replace(":", "-", regex=False)
+# print(df.head())
+# for idx, row in df.iterrows():
+#     if not os.path.exists(f'./processing/data/tmp/{row["name"]}/'):
+#         print("Processing: "+row["movie"])
+#         try:
+#             getData(row["movie"], row["name"],1, row["link"],captions = False)
+#         except Exception as e:
+#             print(print("ERROR", row["movie"]))
+#             print(print(e))
+#     else:
+#         print("Skipping", row["movie"])
+getData('Spirited Away','Spirited-Away', 1,captions = False)
